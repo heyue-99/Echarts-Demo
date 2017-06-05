@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>国内地址查找</title>
+  <link rel="stylesheet" href="bootstrap.min.css">
+  <style>
+	#place-input{
+		width:80%;
+	}
+	form{
+		margin:30px auto;
+	}
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-4 col-md-offset-4">
+      <form class="form-inline">
+         <input id="place-input" type="text"  class="form-control" value="武汉" placeholder="请输入地址">
+         <button type="button" id="search-btn" class="btn btn-success">查询</button>
+      </form>
+	</div>
+  <div>
+  
+  <div class="row">
+    <div class="col-md-6 col-md-offset-3">
+      <div id="main" style="height:500px;"></div>
+    </div>
+  </div>
+</div>
+  
+<script src='jquery.min.js'></script>
+<script src='echarts.min.js'></script>
+<script src='china.js'></script>
+<script>  
+// 百度地图的开发者秘钥
+var token ="hYunmpdXsChCGd42pYmiExGkdZmAhm3N";
+var url = 'http://api.map.baidu.com/geocoder/v2/?output=json&ak=' + token + '&address=';
+var ePlaceInput = $('#place-input');
+var eSearchBtn = $('#search-btn');
+var myChart = echarts.init(document.getElementById('main'));
+var chartData = [];
+eSearchBtn.click(function() {
+  var place = ePlaceInput.val();
+  if (place) {
+    $.getJSON(url + place + '&callback=?', function(res) {
+      var loc;
+      if (res.status === 0) {
+        loc = res.result.location;
+        chartData.push({
+          name: place,
+          value: [loc.lng, loc.lat]
+        })
+        drawMap(place);
+      }else{
+        alert('百度没有找到地址信息');
+      }
+    })
+  }
+})
+
+function drawMap(name) {
+
+  var option = {
+    backgroundColor: ' 	#B0B0B0',
+    title: {
+      text: '地址查询',
+      left: 'center',
+      textStyle: {
+        color: '#fff'
+      }
+    },
+    tooltip: {
+      trigger: 'item'
+    },
+    toolbox: {
+        show: true,
+        feature: {
+            saveAsImage: {
+                show: true
+            }
+        }
+    },
+    geo: {
+      map: 'china',
+      label: {
+        emphasis: {
+          show: false,
+        }
+      },
+      roam: true,
+      itemStyle: {
+        normal: {
+          areaColor: '#636363',
+          borderColor: '#222'
+        },
+        emphasis: {
+          areaColor: '#333'
+        }
+      }
+    },
+    series: [{
+      name: '地址的经纬度',
+      type: 'scatter',
+      coordinateSystem: 'geo',
+      data: chartData,
+      symbolSize: function(val) {
+        return 10;
+      },
+    }]
+  }
+  myChart.setOption(option)
+}
+
+</script>
+</body>
+</html>
